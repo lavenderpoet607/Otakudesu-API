@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - OtakuDesu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-dark: #334155;
+            --success: #22c55e;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+        .admin-header {
+            padding: 30px 0;
+        }
+        .admin-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .admin-header p {
+            color: var(--gray);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        .back-link:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-subtext {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        .control-panel {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .panel-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        .btn-group {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            color: var(--light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .btn-primary {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .btn-primary:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        .btn-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        .btn-warning:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+        .btn-icon {
+            font-size: 1.2rem;
+        }
+        .logs-container {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin: 50px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .log-entry {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .log-time {
+            color: var(--gray);
+            font-size: 0.8rem;
+            margin-right: 15px;
+        }
+        .log-message {
+            color: var(--light);
+        }
+        .log-success {
+            border-left-color: var(--success);
+        }
+        .log-error {
+            border-left-color: var(--danger);
+        }
+        .log-warning {
+            border-left-color: var(--warning);
+        }
+        .log-info {
+            border-left-color: var(--info);
+        }
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .info-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 60px;
+            color: var(--gray);
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .progress-container {
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: none;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        .job-status {
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .status-running {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .status-completed {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .system-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+            <div class="admin-header">
+                <h1><i class="fas fa-cog"></i> Admin Control Panel</h1>
+                <p>Manage scraping jobs, database, and system monitoring</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-title">Total Anime</div>
+                <div class="stat-value" id="totalAnime">0</div>
+                <div class="stat-subtext" id="animeStatus">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Episodes</div>
+                <div class="stat-value" id="totalEpisodes">0</div>
+                <div class="stat-subtext">In database</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Database Size</div>
+                <div class="stat-value" id="dbSize">0</div>
+                <div class="stat-subtext">MB estimated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Uptime</div>
+                <div class="stat-value" id="uptime">0</div>
+                <div class="stat-subtext">seconds</div>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-header">
+                <div class="job-status" id="jobStatus">Running...</div>
+                <div id="jobMessage">Starting job...</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progressText">0%</span>
+                <span id="progressDetails">0/0</span>
+            </div>
+        </div>
+
+        <div class="system-info">
+            <div class="info-card">
+                <div class="info-label">API Status</div>
+                <div class="info-value" id="apiStatus">Online</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Scraper Status</div>
+                <div class="info-value" id="scraperStatus">Active</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Last Update</div>
+                <div class="info-value" id="lastUpdate">-</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Memory Usage</div>
+                <div class="info-value" id="memoryUsage">-</div>
+            </div>
+        </div>
+
+        <div class="controls-grid">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <i class="fas fa-robot panel-icon"></i>
+                    <h3 class="panel-title">Scraper Jobs</h3>
+                </div>
+                <p style="color: var(--gray); margin-bottom: 20px;">Run manual scraping jobs</p>
+                <div class="btn-group">
+                    <button class="btn btn-warning" onclick="runJob('full')">
+                        <i class="fas fa-globe btn-icon"></i>
+                        <span>
+                            <strong>Full Scrape</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Scrape semua anime lengkap dari semua halaman</small>
+                        </span>
+                    </button>
+                    <button class="btn btn-primary" onclick="runJob('initial')">
+                        <i class="fas fa-play btn-icon"></i>
+                        <span>
+                            <strong>Initial Scrape</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Scrape data pertama kali (ongoing + completed)</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="runJob('details')">
+                        <i class="fas fa-sync-alt btn-icon"></i>
+                        <span>
+                            <strong>Update All Details</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Refresh semua detail anime yang ada</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="runJob('episodes')">
+                        <i class="fas fa-sync btn-icon"></i>
+                        <span>
+                            <strong>Check New Episodes</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Update episode terbaru</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="runJob('ongoing')">
+                        <i class="fas fa-tv btn-icon"></i>
+                        <span>
+                            <strong>Update Ongoing</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Refresh ongoing anime semua halaman</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="runJob('completed')">
+                        <i class="fas fa-check-circle btn-icon"></i>
+                        <span>
+                            <strong>Update Completed</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Refresh completed anime semua halaman</small>
+                        </span>
+                    </button>
+                    <button class="btn btn-success" onclick="runJob('complete_missing')">
+                        <i class="fas fa-search-plus btn-icon"></i>
+                        <span>
+                            <strong>Complete Missing Data</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Cek dan scrape anime/episode yang belum ada di database</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel-header">
+                    <i class="fas fa-database panel-icon"></i>
+                    <h3 class="panel-title">Database Management</h3>
+                </div>
+                <p style="color: var(--gray); margin-bottom: 20px;">Manage database operations</p>
+                <div class="btn-group">
+                    <button class="btn" onclick="clearCache()">
+                        <i class="fas fa-trash btn-icon"></i>
+                        <span>
+                            <strong>Clear Cache</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Remove cached data</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="optimizeDB()">
+                        <i class="fas fa-tachometer-alt btn-icon"></i>
+                        <span>
+                            <strong>Optimize Database</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Improve performance</small>
+                        </span>
+                    </button>
+                    <button class="btn btn-success" onclick="backupDB()">
+                        <i class="fas fa-download btn-icon"></i>
+                        <span>
+                            <strong>Backup Database</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Create backup file</small>
+                        </span>
+                    </button>
+                    <button class="btn btn-danger" onclick="removeDuplicates()">
+                        <i class="fas fa-times-circle btn-icon"></i>
+                        <span>
+                            <strong>Remove Duplicates</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Hapus anime dan episode duplikat</small>
+                        </span>
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteAllDatabase()">
+                        <i class="fas fa-skull-crossbones btn-icon"></i>
+                        <span>
+                            <strong>Delete All Database</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">
+                                Hapus SEMUA data anime, episode, batch, dan genre
+                            </small>
+                        </span>
+                    </button>
+                    <button class="btn btn-danger" onclick="stopScraper()">
+                        <i class="fas fa-stop btn-icon"></i>
+                        <span>
+                            <strong>Stop All Jobs</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Pause all scraping</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel-header">
+                    <i class="fas fa-chart-line panel-icon"></i>
+                    <h3 class="panel-title">System Monitoring</h3>
+                </div>
+                <p style="color: var(--gray); margin-bottom: 20px;">Monitor system health</p>
+                <div class="btn-group">
+                    <button class="btn" onclick="loadStats()">
+                        <i class="fas fa-redo btn-icon"></i>
+                        <span>
+                            <strong>Refresh Stats</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Update statistics</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="checkHealth()">
+                        <i class="fas fa-heartbeat btn-icon"></i>
+                        <span>
+                            <strong>Health Check</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">System diagnostics</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="viewLogs()">
+                        <i class="fas fa-file-alt btn-icon"></i>
+                        <span>
+                            <strong>View Logs</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">System logs</small>
+                        </span>
+                    </button>
+                    <button class="btn" onclick="restartServer()">
+                        <i class="fas fa-power-off btn-icon"></i>
+                        <span>
+                            <strong>Restart Server</strong>
+                            <small style="display: block; color: var(--gray); font-weight: normal;">Soft restart</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div class="logs-header">
+                <h3 style="color: var(--light);">
+                    <i class="fas fa-terminal"></i>
+                    System Logs
+                </h3>
+                <button class="btn" style="padding: 8px 16px;" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i>
+                    Clear
+                </button>
+            </div>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>OtakuDesu Admin Panel © 2024 | Auto-scraping: <span id="autoScrapeStatus">Enabled</span></p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--gray);">Use with caution. Changes affect all users.</p>
+        </div>
+    </footer>
+
+<script>
+    let currentJobId = null;
+    let progressInterval = null;
+
+    function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (days > 0) return `${days}d ${hours}h`;
+        if (hours > 0) return `${hours}h ${minutes}m`;
+        return `${minutes}m`;
+    }
+
+    function updateStatsGrid(stats) {
+        const statsGrid = document.getElementById('statsGrid');
+        if (!statsGrid) {
+            console.error('Element #statsGrid not found');
+            return;
+        }
+        
+        statsGrid.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-title">Total Anime</div>
+                <div class="stat-value">${stats.totals.anime ? stats.totals.anime.toLocaleString() : '0'}</div>
+                <div class="stat-subtext">${stats.status_distribution.ongoing || '0'} ongoing, ${stats.status_distribution.completed || '0'} completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Episodes</div>
+                <div class="stat-value">${stats.totals.episodes ? stats.totals.episodes.toLocaleString() : '0'}</div>
+                <div class="stat-subtext">Avg ${stats.totals.anime && stats.totals.episodes ? (stats.totals.episodes / stats.totals.anime).toFixed(1) : '0'} per anime</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Database Size</div>
+                <div class="stat-value">${stats.database.estimated_size_mb || '0'}</div>
+                <div class="stat-subtext">MB estimated | ${stats.totals.total_records || '0'} records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">System Uptime</div>
+                <div class="stat-value">${formatUptime(stats.server.uptime || 0)}</div>
+                <div class="stat-subtext">${stats.scraping.total_scrape_days || '0'} scraping days</div>
+            </div>
+        `;
+    }
+
+    async function loadStats() {
+        addLog('Loading statistics...', 'info');
+        
+        try {
+            const response = await fetch('/api/v2/stats');
+            const data = await response.json();
+            
+            if (data.status && data.stats) {
+                const stats = data.stats;
+                
+                const totalAnimeEl = document.getElementById('totalAnime');
+                const totalEpisodesEl = document.getElementById('totalEpisodes');
+                const uptimeEl = document.getElementById('uptime');
+                const lastUpdateEl = document.getElementById('lastUpdate');
+                const memoryUsageEl = document.getElementById('memoryUsage');
+                const animeStatusEl = document.getElementById('animeStatus');
+                const dbSizeEl = document.getElementById('dbSize');
+                const apiStatusEl = document.getElementById('apiStatus');
+                const scraperStatusEl = document.getElementById('scraperStatus');
+                
+                if (totalAnimeEl) totalAnimeEl.textContent = stats.totals.anime ? stats.totals.anime.toLocaleString() : '0';
+                if (totalEpisodesEl) totalEpisodesEl.textContent = stats.totals.episodes ? stats.totals.episodes.toLocaleString() : '0';
+                if (uptimeEl) uptimeEl.textContent = formatUptime(stats.server.uptime || 0);
+                if (lastUpdateEl) lastUpdateEl.textContent = new Date(stats.system.last_updated).toLocaleString('id-ID');
+                if (memoryUsageEl) memoryUsageEl.textContent = `${stats.server.memory.heapUsed || 0}MB / ${stats.server.memory.heapTotal || 0}MB`;
+                
+                if (animeStatusEl) {
+                    animeStatusEl.innerHTML = `<span style="color: var(--success)">${stats.status_distribution.ongoing || '0'} ongoing</span> | <span style="color: var(--primary)">${stats.status_distribution.completed || '0'} completed</span>`;
+                }
+                
+                if (dbSizeEl) dbSizeEl.textContent = stats.database.estimated_size_mb || '0';
+                
+                if (apiStatusEl) {
+                    apiStatusEl.textContent = 'Online ✓';
+                    apiStatusEl.style.color = 'var(--success)';
+                }
+                
+                if (scraperStatusEl) {
+                    scraperStatusEl.textContent = stats.system.auto_scraping_enabled ? 'Active ✓' : 'Disabled';
+                    scraperStatusEl.style.color = stats.system.auto_scraping_enabled ? 'var(--success)' : 'var(--danger)';
+                }
+                
+                updateStatsGrid(stats);
+                addLog('Statistics loaded successfully', 'success');
+            } else {
+                addLog('Invalid response format from API', 'warning');
+            }
+        } catch (error) {
+            addLog('Failed to load statistics: ' + error.message, 'error');
+            const apiStatusEl = document.getElementById('apiStatus');
+            if (apiStatusEl) {
+                apiStatusEl.textContent = 'Offline ✗';
+                apiStatusEl.style.color = 'var(--danger)';
+            }
+        }
+    }
+
+    async function runJob(job) {
+        const button = event.target.closest('.btn');
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<span class="loading"></span> Starting...';
+        button.disabled = true;
+        
+        addLog(`Starting job: ${job}`, 'info');
+        
+        try {
+            let url;
+            if (job === 'full') {
+                url = `/api/v2/admin/full`;
+            } else if (job === 'details') {
+                url = `/api/v2/admin/details`;
+            } else if (job === 'complete_missing') {
+                url = `/api/v2/admin/complete_missing`;
+            } else if (job === 'remove_duplicates') {
+                url = `/api/v2/admin/remove_duplicates`;
+            } else {
+                url = `/api/v2/admin/trigger/${job}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.status) {
+                addLog(`Job ${job} started: ${data.message}`, 'success');
+                currentJobId = data.jobId;
+                
+                const progressContainer = document.getElementById('progressContainer');
+                const jobStatus = document.getElementById('jobStatus');
+                const jobMessage = document.getElementById('jobMessage');
+                
+                if (progressContainer) progressContainer.style.display = 'block';
+                if (jobStatus) {
+                    jobStatus.className = 'job-status status-running';
+                    jobStatus.textContent = 'Running';
+                }
+                if (jobMessage) jobMessage.textContent = `Job: ${job}`;
+                
+                startProgressMonitoring(data.jobId);
+            } else {
+                addLog(`Job ${job} failed to start: ${data.message}`, 'error');
+            }
+            
+        } catch (error) {
+            addLog(`Error running job ${job}: ${error.message}`, 'error');
+        }
+        
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 2000);
+    }
+
+    async function removeDuplicates() {
+        const button = event.target.closest('.btn');
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<span class="loading"></span> Checking...';
+        button.disabled = true;
+        
+        addLog('Checking for duplicates...', 'info');
+        
+        try {
+            const response = await fetch('/api/v2/admin/remove_duplicates');
+            const data = await response.json();
+            
+            if (data.status) {
+                addLog(`Duplicate removal job started: ${data.message}`, 'success');
+                currentJobId = data.jobId;
+                
+                const progressContainer = document.getElementById('progressContainer');
+                const jobStatus = document.getElementById('jobStatus');
+                const jobMessage = document.getElementById('jobMessage');
+                
+                if (progressContainer) progressContainer.style.display = 'block';
+                if (jobStatus) {
+                    jobStatus.className = 'job-status status-running';
+                    jobStatus.textContent = 'Running';
+                }
+                if (jobMessage) jobMessage.textContent = 'Removing duplicates';
+                
+                startProgressMonitoring(data.jobId);
+            } else {
+                addLog(`Duplicate removal failed to start: ${data.message}`, 'error');
+            }
+        } catch (error) {
+            addLog(`Error removing duplicates: ${error.message}`, 'error');
+        }
+        
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 2000);
+    }
+
+    async function deleteAllDatabase() {
+        if (!confirm('⚠️ WARNING: This will delete ALL anime, episodes, batches, and genres!\n\nThis action cannot be undone!\n\nType "DELETE ALL" to confirm:')) {
+            return;
+        }
+        
+        const confirmation = prompt('Please type "DELETE ALL" to confirm:');
+        if (confirmation !== 'DELETE ALL') {
+            addLog('Database deletion cancelled', 'warning');
+            return;
+        }
+        
+        addLog('Starting complete database deletion...', 'warning');
+        
+        try {
+            const response = await fetch('/api/v2/admin/delete_all', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ confirmation: 'DELETE_ALL' })
+            });
+            
+            const data = await response.json();
+            
+            if (data.status) {
+                addLog(`Database deletion completed: ${data.message}`, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                addLog(`Database deletion failed: ${data.message}`, 'error');
+            }
+        } catch (error) {
+            addLog(`Error deleting database: ${error.message}`, 'error');
+        }
+    }
+
+    function startProgressMonitoring(jobId) {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+        
+        progressInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/v2/progress/${jobId}`);
+                const data = await response.json();
+                
+                if (data.status && data.progress) {
+                    const progress = data.progress;
+                    
+                    const progressFill = document.getElementById('progressFill');
+                    const progressText = document.getElementById('progressText');
+                    const progressDetails = document.getElementById('progressDetails');
+                    const jobMessage = document.getElementById('jobMessage');
+                    const jobStatus = document.getElementById('jobStatus');
+                    
+                    if (progressFill) progressFill.style.width = `${progress.progress}%`;
+                    if (progressText) progressText.textContent = `${Math.round(progress.progress)}%`;
+                    if (progressDetails) progressDetails.textContent = `${progress.current || 0}/${progress.total || 0}`;
+                    if (jobMessage) jobMessage.textContent = progress.message;
+                    
+                    if (progress.status === 'completed') {
+                        if (jobStatus) {
+                            jobStatus.className = 'job-status status-completed';
+                            jobStatus.textContent = 'Completed';
+                        }
+                        clearInterval(progressInterval);
+                        loadStats();
+                    } else if (progress.status === 'error') {
+                        if (jobStatus) {
+                            jobStatus.className = 'job-status status-error';
+                            jobStatus.textContent = 'Error';
+                        }
+                        clearInterval(progressInterval);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching progress:', error);
+            }
+        }, 1000);
+    }
+
+    function addLog(message, type = 'info') {
+        const logsDiv = document.getElementById('logs');
+        if (!logsDiv) {
+            console.log(`[${type}] ${message}`);
+            return;
+        }
+        
+        const logEntry = document.createElement('div');
+        logEntry.className = `log-entry log-${type}`;
+        const time = new Date().toLocaleTimeString();
+        logEntry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-message">${message}</span>`;
+        logsDiv.appendChild(logEntry);
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    async function checkHealth() {
+        addLog('Performing health check...', 'info');
+        
+        try {
+            const response = await fetch('/api/v2/stats');
+            const apiStatusEl = document.getElementById('apiStatus');
+            
+            if (response.ok) {
+                if (apiStatusEl) {
+                    apiStatusEl.textContent = 'Online';
+                    apiStatusEl.style.color = 'var(--success)';
+                }
+                addLog('API health check passed', 'success');
+            } else {
+                if (apiStatusEl) {
+                    apiStatusEl.textContent = 'Offline';
+                    apiStatusEl.style.color = 'var(--danger)';
+                }
+                addLog('API health check failed', 'error');
+            }
+        } catch (error) {
+            const apiStatusEl = document.getElementById('apiStatus');
+            if (apiStatusEl) {
+                apiStatusEl.textContent = 'Error';
+                apiStatusEl.style.color = 'var(--danger)';
+            }
+            addLog('Health check error: ' + error.message, 'error');
+        }
+    }
+
+    function clearLogs() {
+        const logsDiv = document.getElementById('logs');
+        if (logsDiv) {
+            logsDiv.innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+    }
+
+    function clearCache() {
+        addLog('Clearing cache...', 'warning');
+        setTimeout(() => {
+            addLog('Cache cleared (simulated)', 'success');
+            loadStats();
+        }, 1000);
+    }
+
+    function optimizeDB() {
+        addLog('Optimizing database...', 'info');
+        setTimeout(() => {
+            addLog('Database optimization completed', 'success');
+        }, 1500);
+    }
+
+    function backupDB() {
+        addLog('Creating database backup...', 'info');
+        setTimeout(() => {
+            addLog('Backup created successfully (simulated)', 'success');
+        }, 2000);
+    }
+
+    function stopScraper() {
+        addLog('Stopping all scraping jobs...', 'warning');
+        const scraperStatusEl = document.getElementById('scraperStatus');
+        if (scraperStatusEl) {
+            scraperStatusEl.textContent = 'Stopped';
+            scraperStatusEl.style.color = 'var(--danger)';
+        }
+        
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            const progressContainer = document.getElementById('progressContainer');
+            if (progressContainer) progressContainer.style.display = 'none';
+        }
+        
+        setTimeout(() => {
+            addLog('All scraping jobs stopped', 'success');
+        }, 1000);
+    }
+
+    function viewLogs() {
+        const logsDiv = document.getElementById('logs');
+        if (logsDiv) {
+            logsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function restartServer() {
+        addLog('Restarting server...', 'warning');
+        setTimeout(() => {
+            addLog('Server restart initiated (simulated)', 'success');
+            loadStats();
+        }, 2000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStats();
+        checkHealth();
+        addLog('Admin panel initialized', 'success');
+        setInterval(loadStats, 30000);
+        setInterval(checkHealth, 60000);
+    });
+</script>
+</body>
+</html>

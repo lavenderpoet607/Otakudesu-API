@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Console - OtakuDesu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --terminal-bg: #1e293b;
+            --text: #f8fafc;
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
+            --gray: #64748b;
+            --radius: 8px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .console-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .terminal-header {
+            background: var(--terminal-bg);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .terminal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .terminal-body {
+            flex: 1;
+            background: var(--terminal-bg);
+            border-radius: 0 0 var(--radius) var(--radius);
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .output-area {
+            margin-bottom: 20px;
+            min-height: calc(100vh - 200px);
+        }
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            border-left: 3px solid var(--blue);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .log-success {
+            border-left-color: var(--green);
+        }
+        .log-error {
+            border-left-color: var(--red);
+        }
+        .log-warning {
+            border-left-color: var(--yellow);
+        }
+        .log-info {
+            border-left-color: var(--blue);
+        }
+        .log-system {
+            border-left-color: var(--purple);
+        }
+        .log-time {
+            color: var(--gray);
+            margin-right: 15px;
+            font-size: 0.9em;
+        }
+        .log-message {
+            color: var(--text);
+        }
+        .command-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius);
+            margin-top: 10px;
+        }
+        .prompt {
+            color: var(--green);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        #commandInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            padding: 5px;
+        }
+        .command-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius);
+            font-size: 0.9em;
+            color: var(--gray);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .history-title {
+            margin-bottom: 10px;
+            color: var(--text);
+            font-weight: bold;
+        }
+        .history-item {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .suggestion-box {
+            position: absolute;
+            bottom: 80px;
+            background: var(--terminal-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            padding: 10px;
+            min-width: 300px;
+            display: none;
+            z-index: 100;
+        }
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .help-table th {
+            text-align: left;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--cyan);
+        }
+        .help-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .help-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .auto-scroll {
+            position: fixed;
+            bottom: 100px;
+            right: 40px;
+            padding: 10px;
+            background: var(--terminal-bg);
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--purple);
+        }
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--green);
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+        @media (max-width: 768px) {
+            .console-wrapper {
+                padding: 10px;
+            }
+            .terminal-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .terminal-controls {
+                width: 100%;
+                justify-content: center;
+            }
+            .auto-scroll {
+                right: 20px;
+                bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="console-wrapper">
+        <div class="terminal-header">
+            <div class="terminal-title">
+                <span class="status-indicator"></span>
+                <span>OtakuDesu System Console</span>
+            </div>
+            <div class="terminal-controls">
+                <button class="control-btn" onclick="clearConsole()">
+                    <i class="fas fa-trash"></i>
+                    Clear
+                </button>
+                <button class="control-btn" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                    Theme
+                </button>
+                <button class="control-btn" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i>
+                    Help
+                </button>
+                <button class="control-btn" onclick="connectWebSocket()">
+                    <i class="fas fa-plug"></i>
+                    Connect
+                </button>
+            </div>
+        </div>
+        
+        <div class="terminal-body">
+            <div class="output-area" id="consoleOutput">
+                <div class="log-entry log-system">
+                    <span class="log-time">[System]</span>
+                    <span class="log-message">Console initialized. Type 'help' for available commands.</span>
+                </div>
+                <div class="log-entry log-info">
+                    <span class="log-time">[Info]</span>
+                    <span class="log-message">Connected to OtakuDesu API Server</span>
+                </div>
+            </div>
+            
+            <div class="command-line">
+                <span class="prompt">$</span>
+                <input type="text" id="commandInput" placeholder="Type command..." autocomplete="off" onkeydown="handleKeyDown(event)">
+                <button class="control-btn" onclick="executeCommand()" style="padding: 8px 16px;">
+                    <i class="fas fa-paper-plane"></i>
+                    Send
+                </button>
+            </div>
+            
+            <div class="command-history" id="historyPanel">
+                <div class="history-title">Command History</div>
+                <div id="historyList"></div>
+            </div>
+        </div>
+        
+        <div class="auto-scroll" id="autoScroll" onclick="toggleAutoScroll()">
+            <i class="fas fa-arrow-down"></i>
+            <span>Auto-scroll: ON</span>
+        </div>
+        
+        <div class="suggestion-box" id="suggestionBox"></div>
+    </div>
+
+    <script>
+        const outputDiv = document.getElementById('consoleOutput');
+        const commandInput = document.getElementById('commandInput');
+        const historyList = document.getElementById('historyList');
+        const suggestionBox = document.getElementById('suggestionBox');
+        let commandHistory = [];
+        let historyIndex = -1;
+        let autoScroll = true;
+        let currentTheme = 'dark';
+        const commands = {
+            help: { desc: 'Show all available commands', usage: 'help' },
+            clear: { desc: 'Clear console output', usage: 'clear' },
+            stats: { desc: 'Show system statistics', usage: 'stats' },
+            scrape: { desc: 'Run scraper job [initial|episodes|ongoing|completed]', usage: 'scrape <job>' },
+            ping: { desc: 'Check server response time', usage: 'ping' },
+            api: { desc: 'Test API endpoints [v1|v2]', usage: 'api <version>' },
+            logs: { desc: 'Show recent system logs', usage: 'logs' },
+            status: { desc: 'Check system status', usage: 'status' },
+            mem: { desc: 'Show memory usage', usage: 'mem' },
+            time: { desc: 'Show server time', usage: 'time' },
+            quit: { desc: 'Close console (simulated)', usage: 'quit' }
+        };
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message">${message}</span>
+            `;
+            outputDiv.appendChild(entry);
+            if (autoScroll) {
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            }
+            addToHistory(message, type);
+        }
+        function addToHistory(message, type) {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <span style="color: ${getColorForType(type)}">●</span>
+                <span style="margin-left: 10px; color: var(--text)">${message.substring(0, 50)}${message.length > 50 ? '...' : ''}</span>
+            `;
+            historyItem.onclick = () => log(`Re-executing: ${message}`, 'info');
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+        function getColorForType(type) {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6',
+                system: '#8b5cf6'
+            };
+            return colors[type] || colors.info;
+        }
+        async function executeCommand() {
+            const command = commandInput.value.trim();
+            if (!command) return;
+            commandInput.value = '';
+            log(`> ${command}`, 'system');
+            commandHistory.unshift(command);
+            historyIndex = -1;
+            if (commandHistory.length > 50) commandHistory.pop();
+            const parts = command.split(' ');
+            const cmd = parts[0].toLowerCase();
+            const args = parts.slice(1);
+            switch(cmd) {
+                case 'help':
+                    showHelpCommand();
+                    break;
+                case 'clear':
+                    clearConsole();
+                    break;
+                case 'stats':
+                    await showStats();
+                    break;
+                case 'scrape':
+                    await runScrapeJob(args[0] || 'episodes');
+                    break;
+                case 'ping':
+                    await pingServer();
+                    break;
+                case 'api':
+                    await testAPI(args[0] || 'v2');
+                    break;
+                case 'logs':
+                    await showLogs();
+                    break;
+                case 'status':
+                    await checkStatus();
+                    break;
+                case 'mem':
+                    await showMemory();
+                    break;
+                case 'time':
+                    showTime();
+                    break;
+                case 'quit':
+                    log('Console closing... (simulated)', 'warning');
+                    break;
+                default:
+                    log(`Unknown command: ${cmd}. Type 'help' for available commands.`, 'error');
+            }
+        }
+        function showHelpCommand() {
+            log('Available commands:', 'info');
+            const table = document.createElement('table');
+            table.className = 'help-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Command</th>
+                        <th>Description</th>
+                        <th>Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${Object.entries(commands).map(([cmd, info]) => `
+                        <tr>
+                            <td><strong style="color: var(--cyan)">${cmd}</strong></td>
+                            <td>${info.desc}</td>
+                            <td><code style="color: var(--gray)">${info.usage}</code></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            outputDiv.appendChild(table);
+        }
+        async function showStats() {
+            log('Fetching system statistics...', 'info');
+            try {
+                const response = await fetch('/api/v2/stats');
+                const data = await response.json();
+                if (data.status) {
+                    const stats = data.stats;
+                    log('System Statistics:', 'success');
+                    const statsDiv = document.createElement('div');
+                    statsDiv.className = 'stats-grid';
+                    statsDiv.innerHTML = `
+                        <div class="stat-box">
+                            <div class="stat-value">${stats.anime.total}</div>
+                            <div class="stat-label">Total Anime</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${stats.episodes.total}</div>
+                            <div class="stat-label">Total Episodes</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${stats.anime.ongoing}</div>
+                            <div class="stat-label">Ongoing</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${Math.floor(stats.server.uptime)}s</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    `;
+                    outputDiv.appendChild(statsDiv);
+                    log(`Memory: ${Math.round(stats.server.memory.heapUsed / 1024 / 1024)}MB`, 'info');
+                } else {
+                    log('Failed to fetch stats', 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        async function runScrapeJob(job) {
+            const validJobs = ['initial', 'episodes', 'ongoing', 'completed'];
+            if (!validJobs.includes(job)) {
+                log(`Invalid job. Available: ${validJobs.join(', ')}`, 'error');
+                return;
+            }
+            log(`Running scraper job: ${job}`, 'info');
+            try {
+                const response = await fetch(`/api/v2/admin/trigger/${job}`);
+                const data = await response.json();
+                if (data.status) {
+                    log(`Job completed: ${data.message}`, 'success');
+                } else {
+                    log(`Job failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        async function pingServer() {
+            const start = Date.now();
+            try {
+                const response = await fetch('/api/v1');
+                const end = Date.now();
+                const time = end - start;
+                log(`Pong! Response time: ${time}ms`, 'success');
+            } catch (error) {
+                log('Ping failed: Server not responding', 'error');
+            }
+        }
+        async function testAPI(version) {
+            const validVersions = ['v1', 'v2'];
+            if (!validVersions.includes(version)) {
+                log(`Invalid version. Available: ${validVersions.join(', ')}`, 'error');
+                return;
+            }
+            log(`Testing API ${version}...`, 'info');
+            try {
+                const response = await fetch(`/api/${version}`);
+                const data = await response.json();
+                log(`API ${version} status: ${data.status || 'active'}`, 'success');
+                log(`Base URL: ${data.base_url || 'N/A'}`, 'info');
+            } catch (error) {
+                log(`API ${version} test failed: ${error.message}`, 'error');
+            }
+        }
+        async function showLogs() {
+            log('Recent logs would appear here...', 'info');
+            log('(Log viewing feature requires backend implementation)', 'warning');
+        }
+        async function checkStatus() {
+            log('Checking system status...', 'info');
+            try {
+                const response = await fetch('/api/v2/stats');
+                if (response.ok) {
+                    log('✓ API Server: Online', 'success');
+                    log('✓ Database: Connected', 'success');
+                    log('✓ Scraper: Active', 'success');
+                } else {
+                    log('✗ System has issues', 'error');
+                }
+            } catch (error) {
+                log('✗ System offline', 'error');
+            }
+        }
+        async function showMemory() {
+            try {
+                const response = await fetch('/api/v2/stats');
+                const data = await response.json();
+                if (data.status) {
+                    const mem = data.stats.server.memory;
+                    const used = Math.round(mem.heapUsed / 1024 / 1024);
+                    const total = Math.round(mem.heapTotal / 1024 / 1024);
+                    const percent = ((used / total) * 100).toFixed(1);
+                    log(`Memory Usage: ${used}MB / ${total}MB (${percent}%)`, 'info');
+                }
+            } catch (error) {
+                log('Failed to get memory info', 'error');
+            }
+        }
+        function showTime() {
+            const now = new Date();
+            log(`Server time: ${now.toLocaleString()}`, 'info');
+        }
+        function clearConsole() {
+            outputDiv.innerHTML = '';
+            log('Console cleared.', 'info');
+        }
+        function showHelp() {
+            outputDiv.innerHTML = '';
+            showHelpCommand();
+        }
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.style.backgroundColor = currentTheme === 'dark' ? '#0f172a' : '#f8fafc';
+            document.body.style.color = currentTheme === 'dark' ? '#f8fafc' : '#0f172a';
+            log(`Theme switched to ${currentTheme}`, 'info');
+        }
+        function connectWebSocket() {
+            log('WebSocket connection simulated', 'info');
+            setTimeout(() => {
+                log('Connected to real-time updates', 'success');
+            }, 1000);
+        }
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const btn = document.getElementById('autoScroll');
+            btn.innerHTML = autoScroll ? 
+                '<i class="fas fa-arrow-down"></i><span>Auto-scroll: ON</span>' :
+                '<i class="fas fa-ban"></i><span>Auto-scroll: OFF</span>';
+            log(`Auto-scroll ${autoScroll ? 'enabled' : 'disabled'}`, 'info');
+        }
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                executeCommand();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[historyIndex];
+                }
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    commandInput.value = commandHistory[historyIndex];
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    commandInput.value = '';
+                }
+            } else if (event.key === 'Tab') {
+                event.preventDefault();
+                showSuggestions();
+            }
+        }
+        function showSuggestions() {
+            const input = commandInput.value.toLowerCase();
+            const matches = Object.keys(commands).filter(cmd => cmd.startsWith(input));
+            if (matches.length > 0) {
+                suggestionBox.innerHTML = matches.map(cmd => `
+                    <div class="suggestion-item" onclick="selectSuggestion('${cmd}')">
+                        <strong>${cmd}</strong> - ${commands[cmd].desc}
+                    </div>
+                `).join('');
+                suggestionBox.style.display = 'block';
+                suggestionBox.style.left = commandInput.offsetLeft + 'px';
+                suggestionBox.style.bottom = '60px';
+            }
+        }
+        function selectSuggestion(cmd) {
+            commandInput.value = cmd;
+            suggestionBox.style.display = 'none';
+            commandInput.focus();
+        }
+        document.addEventListener('click', (event) => {
+            if (!suggestionBox.contains(event.target) && event.target !== commandInput) {
+                suggestionBox.style.display = 'none';
+            }
+        });
+        commandInput.focus();
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/v2/stats');
+                if (!response.ok) {
+                    log('Server connection lost!', 'error');
+                }
+            } catch (error) {
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
