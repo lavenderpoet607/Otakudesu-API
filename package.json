@@ -4,7 +4,7 @@
   "description": "OtakuDesu Anime API with MySQL Database and Auto-Scraping",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node ./index.js",
     "dev": "nodemon index.js",
     "init-db": "node scripts/init-database.js",
     "scrape-ongoing": "node -e \"require('./src/services/scraper').scrapeOngoingAnime(3)\"",
